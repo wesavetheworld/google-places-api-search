@@ -1,2 +1,1 @@
-area,name,lat,long,id,vicinity,type
-area,name,lat,long,id,vicinity,type
+
