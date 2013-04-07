@@ -52,7 +52,7 @@ class GooglePlacesSearch {
 	}
 
     //Checking, whether there are any results, 
-    //eg., Are there any places named by Mandela(within this pair of coordinates+this radius?)
+    //eg., Are there any places named by XXX (within this pair of coordinates+this radius?)
     public function handleResults($output, $currentArea) {
             if($output['status'] === "OK") {                 
                 $this->fetchData($output, $currentArea);
