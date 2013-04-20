@@ -1,3 +1,4 @@
+//Marina Shchukina - BBC
 <?php
 class GooglePlacesSearch {
 	
