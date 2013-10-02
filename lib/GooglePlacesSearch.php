@@ -1,18 +1,16 @@
-//Marina Shchukina - BBC
 <?php
 class GooglePlacesSearch {
 	
-	protected $locationsFile = 'input/set_of_search_areas_world.csv'; //file containing set of searched locations
+	protected $locationsFile = 'input/set_of_search_areas.csv'; //file containing set of searched locations
 	protected $areas = array(); //an array holding the content of the locations .csv file
 	protected $file = 'output/this.txt';
 	protected $apiKey;
     protected $query;
-    
     private $linesCount = 0;
 
 		
 	//constructor
-	public function __construct($apiKey="your_default_key", $query="gandi") {
+	public function __construct($apiKey="your_default_key", $query="pascal") {
 		$this->apiKey = $apiKey;
         $this->query = $query;		
 		$this->initSetup();
@@ -44,8 +42,8 @@ class GooglePlacesSearch {
             curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             //curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-            curl_setopt($ch, CURLOPT_PROXY, 'tcp://10.152.4.180');
-            curl_setopt($ch, CURLOPT_PROXYPORT, 80);
+            //curl_setopt($ch, CURLOPT_PROXY, 'tcp://10.152.4.180');
+            //curl_setopt($ch, CURLOPT_PROXYPORT, 80);
             $curl_result = curl_exec($ch);
             if ($curl_result === false) echo curl_error($ch);
             curl_close($ch);
@@ -53,7 +51,7 @@ class GooglePlacesSearch {
 	}
 
     //Checking, whether there are any results, 
-    //eg., Are there any places named by XXX (within this pair of coordinates+this radius?)
+    //eg., Are there any places named by Mandela(within this pair of coordinates+this radius?)
     public function handleResults($output, $currentArea) {
             if($output['status'] === "OK") {                 
                 $this->fetchData($output, $currentArea);
@@ -122,13 +120,12 @@ class GooglePlacesSearch {
     	$this->addOutputHeader();             //add header to the xls output
 
     	foreach ($areas as $area) {
-                $currentArea = trim($area[0]);
-            	$lat = $area[1];	
-        		$lngStart = $area[2];
-        		$lng = $lngStart; //-12; //$lat and $lng are the starting values of long (Coordinates for top Left corner) 
-        		$latEnd = $area[3]; //40; 
-        		$lngEnd = $area[4]; //25;
-            	
+            $currentArea = trim($area[0]);
+            $lat = $area[1];	
+        	$lngStart = $area[2];
+        	$lng = $lngStart; //-12; //$lat and $lng are the starting values of long (Coordinates for top Left corner) 
+        	$latEnd = $area[3]; //40; 
+        	$lngEnd = $area[4]; //25;	
 
             while ($lat > $latEnd ) { 
         	   	$lng = $lngStart; //reset longitude
