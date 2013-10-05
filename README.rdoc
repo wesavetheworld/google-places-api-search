@@ -21,13 +21,13 @@ First, register a new GooglePlacesSearch object providing the following paramete
 Second, line by line specify the areas within which you want to search in the following format:
 * area_name topLeftLong topLeftLat bottomRightLong bottomRightLat *
 
- To search the whole world use the following set of areas:
-* south_america,15,-95,-25,-40,
-* africa,35,-22,-38,60,
-* australia,-15,110,-48,156,
-* north_america,49,-130,15,-60,
-* asia,50,60,8,125,
-* europe,65,-12,35,60
+To search the whole world use the following set of areas:
+ south_america,15,-95,-25,-40,
+ africa,35,-22,-38,60,
+ australia,-15,110,-48,156,
+ north_america,49,-130,15,-60,
+ asia,50,60,8,125,
+ europe,65,-12,35,60
 
 === Search
 Run the script from the terminal, eg. *php search.php*
