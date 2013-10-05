@@ -30,7 +30,9 @@ To search the whole world use the following set of areas:
  europe,65,-12,35,60
 
 === Search
-Run the script from the terminal, eg. *php search.php*
+Run the script from the terminal, eg. 
+ 
+ php search.php
 
 === Output
 The list of found places is saved in the file output/this.txt, each in a separate line containing information about the place in the following order:
