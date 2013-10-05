@@ -1,31 +1,31 @@
 <?php
 class GooglePlacesSearch {
 	
-	protected $searched_areas_source_file = 'input/set_of_searched_areas.csv';
-	protected $set_of_searched_areas = array();
-	protected $output_file = 'output/this.txt';
-	protected $api_key;
+    protected $searched_areas_source_file = 'input/set_of_searched_areas.csv';
+    protected $set_of_searched_areas = array();
+    protected $output_file = 'output/this.txt';
+    protected $google_places_api_key;
     protected $query;
     private $lines_count = 0;
     private $lng_step = 0.5;
     private $lat_step = 0.6;
 
-	/*
+    /*
      * Constructor
      */
-	public function __construct($api_key="your_default_key", $query="gogh") {
+	public function __construct($google_places_api_key, $query) {
 		ini_set('memory_limit', '512M');
-        $this->ary[] = "UTF-8";
-        $this->ary[] = "ASCII";
-        $this->ary[] = "EUC-JP";
+        $this->ary[] = 'UTF-8';
+        $this->ary[] = 'ASCII';
+        $this->ary[] = 'EUC-JP';
         mb_detect_order($this->ary);
-        $this->api_key = $api_key;
+        $this->google_places_api_key = $google_places_api_key;
         $this->query = $query;		
 	}
 
-	/* 
-     * Get coordinates from the locations file
-     * input/set_of_searched_areas.csv, saves it into an array
+    /* 
+     * Get coordinates from the file holding locations coordinates
+     * input/set_of_searched_areas.csv, save it into an array
      */
     protected function getAreas() {
        $csvData = file_get_contents($this->searched_areas_source_file);  
@@ -36,31 +36,31 @@ class GooglePlacesSearch {
     }
 
     protected function curl_request_to_google_api($url){
-		    $ch = curl_init($url);
-            curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            $curl_result = curl_exec($ch);
-            if ($curl_result === false) echo curl_error($ch);
-            curl_close($ch);
-            return $curl_result;
+	    $ch = curl_init($url);
+        curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        $curl_result = curl_exec($ch);
+        if ($curl_result === false) echo curl_error($ch);
+        curl_close($ch);
+        return $curl_result;
 	}
 
     /* 
-     * Checking whether there are any results, 
+     * Checking if there are any results, 
      * eg., are there any places named by Van Gogh
-     * (within this pair of coordinates+this radius?)
+     * (within this pair of coordinates+this radius)
      */
     protected function handleResults($output, $currentArea) {
-            if($output['status'] === "OK") {                 
-                $this->fetch_data_from_curl($output, $currentArea);
-                echo "I have results!" . "\n";
-            }
-            else if ($output['status'] === "ZERO_RESULTS") {
-                echo "No results!" . "\n";
-            } else {
-                echo $output['status'];
-            }
+        if($output['status'] === "OK") {                 
+            $this->fetch_data_from_curl($output, $currentArea);
+            echo "I have results!" . "\n";
+        }
+        else if ($output['status'] === "ZERO_RESULTS") {
+            echo "No results!" . "\n";
+        } else {
+            echo $output['status'];
+        }
     }
 
     protected function add_output_header() {
@@ -68,37 +68,37 @@ class GooglePlacesSearch {
     }
     
     protected function fetch_data_from_curl($output, $currentArea) {
-            $types = array();
+        $types = array();
+        
+        for ($i = 0; $i < count($output['results']); $i++) {
+            $this->lines_count++;
+
+            //creating a line
+            $line = " " . $this->lines_count. ","; //add the count column
+            $line = " " . $currentArea. ","; //add the area column
             
-            for ($i = 0; $i < count($output['results']); $i++) {
-                $this->lines_count++;
+            //adding data from the cURL request to the line
+            $line .= str_replace(",", "", $output['results'][$i]['name']) . ","; //eliminate commas in a name
+            $line .= $output['results'][$i]['geometry']['location']['lat'] . ",";
+            $line .= $output['results'][$i]['geometry']['location']['lng'] . ",";               
+            $line .= $output['results'][$i]['id'] . ",";
+            $line .= str_replace(",", "", $output['results'][$i]['vicinity']) . ",";
+            
+            if(isset($output['results'][$i]['types'])) { //https://developers.google.com/places/documentation/supported_types
+                $types = $output['results'][$i]['types'];
 
-                //creating a line
-                $line = " " . $this->lines_count. ","; //add the count column
-                $line = " " . $currentArea. ","; //add the area column
-                
-                //adding data from the cURL request to the line
-                $line .= str_replace(",", "", $output['results'][$i]['name']) . ","; //eliminate commas in a name
-                $line .= $output['results'][$i]['geometry']['location']['lat'] . ",";
-                $line .= $output['results'][$i]['geometry']['location']['lng'] . ",";               
-                $line .= $output['results'][$i]['id'] . ",";
-                $line .= str_replace(",", "", $output['results'][$i]['vicinity']) . ",";
-                
-                if(isset($output['results'][$i]['types'])) { //https://developers.google.com/places/documentation/supported_types
-                    $types = $output['results'][$i]['types'];
-
-                    for($j = 0; $j< sizeof($types); $j++) {
-                        if ($j == sizeof($types)-1) {
-                            $line .= $types[$j];
-                        } else {
-                            $line .= $types[$j] . " | ";
-                        }
+                for($j = 0; $j< sizeof($types); $j++) {
+                    if ($j == sizeof($types)-1) {
+                        $line .= $types[$j];
+                    } else {
+                        $line .= $types[$j] . " | ";
                     }
-                } else {
-                    $line .= " " . ",";
                 }
-                file_put_contents($this->output_file, $this->encode_line($line) . "\r\n", FILE_APPEND | LOCK_EX);
+            } else {
+                $line .= " " . ",";
             }
+            file_put_contents($this->output_file, $this->encode_line($line) . "\r\n", FILE_APPEND | LOCK_EX);
+        }
     }
 
     protected function encode_line($line) {
@@ -106,7 +106,6 @@ class GooglePlacesSearch {
         return $encoded_line;
     } 
 
-  
     public function Search() {
         $count = 0;
     	$set_of_searched_areas = $this->getAreas();
@@ -128,7 +127,7 @@ class GooglePlacesSearch {
 
                while($lng < $lngEnd ) { 
 
-                    $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={$lat},{$lng}&radius=50000&name={$this->query}&language=en-GB&sensor=true&key={$this->api_key}";
+                    $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={$lat},{$lng}&radius=50000&name={$this->query}&language=en-GB&sensor=true&key={$this->google_places_api_key}";
 
                     $output = json_decode($this->curl_request_to_google_api($url), true);
                     echo ' area: ' . $currentArea . ' | ' . 'lat: ' . $lat . ' | long: ' . $lng . ' | ';
